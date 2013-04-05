@@ -1,0 +1,14 @@
+################################ -*- Ruby -*- #################################
+# Common tasks
+#
+
+desc "Generate README.md"
+task "readme" do
+  sh "emacs", "-batch", "-l", "../el2markdown.el", "../el2markdown.el", \
+  "-f", "el2markdown-write-readme"
+end
+
+desc "Generating html"
+task "html" => ["readme"] do
+  sh "Markdown.pl ../README.md > README.html"
+end
