@@ -1,10 +1,11 @@
 ;;; el2markdown.el -- Convert commentary section of elisp files to markdown.
 
-;; Copyright (C) 2013 Anders Lindgren
+;; Copyright (C) 2013-2014 Anders Lindgren
 
 ;; Author: Anders Lindgren
-;; Version: 0.0.0
+;; Version: 0.0.1
 ;; Created: 2013-03-26
+;; URL: https://github.com/Lindydancer/el2markdown
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -43,14 +44,19 @@
 ;; However, some things are recognized. A single line ending with a
 ;; colon is cosidered a *heading*. If this line is at the start of a
 ;; comment block, it is considered a main (level 2) heading. Otherwise
-;; it is considered a (level 3) subheading.
+;; it is considered a (level 3) subheading. Note that the line
+;; precedes a bullet list or code, it will not be treated as a
+;; subheading.
 ;;
 ;; Use Markdown formatting:
 ;;
 ;; It is possible to use markdown syntax in the text, like *this*, and
 ;; **this**.
 ;;
-;; Special formats:
+;; Conventions:
+;;
+;; The following conventions are used when converting elisp comments
+;; to MarkDown:
 ;;
 ;; * Code blocks using either the Markdown convention by indenting the
 ;;   block with four extra spaces, or by starting a paragraph with a
@@ -77,7 +83,9 @@
 ;;     ;;
 ;;     ;; A subheading:
 ;;     ;;
-;;     ;; Another paragraph...
+;;     ;; Another paragraph.
+;;     ;;
+;;     ;; This line is *not* as a subheading:
 ;;     ;;
 ;;     ;; * A bullet in a list
 ;;     ;;
@@ -123,6 +131,9 @@
 ;;
 
 ;;; Code:
+
+(defvar el2markdown-empty-comment "^;; *\\(\\({{{\\|}}}\\).*\\)?$"
+  "Regexp of lines that should be considered empty.")
 
 (defun el2markdown-view-buffer ()
   "Convert comment section to markdown and display in temporary buffer."
@@ -183,7 +194,11 @@
           (setq from (concat " from `"
                              (file-name-nondirectory file-name)
                              "`")))
-      (princ (concat "Converted" from " by *el2markup*.")))))
+      (princ (concat
+              "Converted" from
+              " by "
+              "[*el2markup*](https://github.com/Lindydancer/el2markdown)."))
+      (terpri))))
 
 
 (defun el2markdown-skip-empty-lines()
@@ -192,10 +207,20 @@
 
 
 (defun el2markdown-translate-string (string)
-  (while (string-match "`\\([^ ]*\\)'" string)
-    (setq string (replace-match (concat "`" (match-string 1 string) "`")
-                                nil t string)))
-  string)
+  (let ((res ""))
+    (while (string-match "`\\([^']*\\)'" string)
+      (setq res (concat res (substring string 0 (match-beginning 0))))
+      (let ((content (match-string 1 string))
+            (beg "`")
+            (end "`"))
+        (setq string (substring string (match-end 0)))
+        (when (save-match-data
+                (let ((case-fold-search nil))
+                  (string-match "^[CM]-" content)))
+          (setq beg "<kbd>")
+          (setq end "</kbd>"))
+        (setq res (concat res beg content end))))
+    (concat res string)))
 
 
 (defun el2markdown-convert-title ()
@@ -214,13 +239,17 @@
       (when limit
         (el2markdown-convert-formal-information-item "Author"  limit)
         (el2markdown-convert-formal-information-item "Version" limit)
+        (el2markdown-convert-formal-information-item "URL"     limit 'link)
         (terpri)))))
 
 
-(defun el2markdown-convert-formal-information-item (item lim)
+(defun el2markdown-convert-formal-information-item (item lim &optional link)
   (when (re-search-forward (concat "^;; " item ": *\\(.*\\)") nil t)
-    (princ (concat "*" item ":* " (match-string-no-properties 1) "<br>"))
-    (terpri)))
+    (let ((s (match-string-no-properties 1)))
+      (if link
+          (setq s (concat "[" s "](" s ")")))
+      (princ (concat "*" item ":* " s "<br>"))
+      (terpri))))
 
 
 (defun el2markdown-skip-to-commentary ()
@@ -233,8 +262,9 @@
   (if (or (looking-at  "^;;; Code:$")
           (eobp))
       nil
-    (el2markdown-emit-rest-of-comment)
-    t))
+    (let ((p (point)))
+      (el2markdown-emit-rest-of-comment)
+      (not (eq p (point))))))
 
 
 (defun el2markdown-emit-header (count title)
@@ -262,13 +292,24 @@
   (let ((first t))
     (while (looking-at "^;;")
       ;; Skip empty lines.
-      (while (looking-at "^;;$")
+      (while (looking-at el2markdown-empty-comment)
         (forward-line))
       (if (and (looking-at ";; \\(.*\\):$")
                (save-excursion
                  (save-match-data
                    (forward-line)
-                   (looking-at ";;$"))))
+                   (looking-at el2markdown-empty-comment)))
+               ;; When preceding code or bullet list, don't treat as
+               ;; sub-header.
+               (or first
+                   (not (save-excursion
+                          (save-match-data
+                            (forward-line)
+                            (while (looking-at el2markdown-empty-comment)
+                              (forward-line))
+                            (or (el2markdown-is-at-bullet-list)
+                                (looking-at ";; *(")
+                                (looking-at ";;     ")))))))
           ;; Header
           (progn
             (el2markdown-emit-header (if first 2 3)
@@ -279,7 +320,7 @@
         ;; assumes to be code.)
         (let ((is-code (looking-at ";; *("))
               (is-bullet (el2markdown-is-at-bullet-list)))
-          (while (looking-at ";; \\(.*\\)$")
+          (while (looking-at ";; ?\\(.+\\)$")
             (if is-code
                 (princ "    "))
             (princ (el2markdown-translate-string

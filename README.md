@@ -1,7 +1,8 @@
 # el2markdown - Convert commentary section of elisp files to markdown
 
 *Author:* Anders Lindgren<br>
-*Version:* 0.0.0<br>
+*Version:* 0.0.1<br>
+*URL:* [https://github.com/Lindydancer/el2markdown](https://github.com/Lindydancer/el2markdown)<br>
 
 This package converts *Commentary* section in Emacs Lisp modules to
 text files in MarkDown format, a format supporting headings, code
@@ -25,14 +26,19 @@ written using plain text, as they always have been written.
 However, some things are recognized. A single line ending with a
 colon is cosidered a *heading*. If this line is at the start of a
 comment block, it is considered a main (level 2) heading. Otherwise
-it is considered a (level 3) subheading.
+it is considered a (level 3) subheading. Note that the line
+precedes a bullet list or code, it will not be treated as a
+subheading.
 
 ### Use Markdown formatting
 
 It is possible to use markdown syntax in the text, like *this*, and
 **this**.
 
-### Special formats
+### Conventions
+
+The following conventions are used when converting elisp comments
+to MarkDown:
 
 * Code blocks using either the Markdown convention by indenting the
   block with four extra spaces, or by starting a paragraph with a
@@ -56,7 +62,9 @@ It is possible to use markdown syntax in the text, like *this*, and
     ;;
     ;; A subheading:
     ;;
-    ;; Another paragraph...
+    ;; Another paragraph.
+    ;;
+    ;; This line is *not* as a subheading:
     ;;
     ;; * A bullet in a list
     ;;
@@ -103,4 +111,4 @@ For example,
 
 
 ---
-Converted from `el2markdown.el` by *el2markup*.
+Converted from `el2markdown.el` by [*el2markup*](https://github.com/Lindydancer/el2markdown).

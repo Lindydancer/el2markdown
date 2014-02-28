@@ -10,5 +10,65 @@ end
 
 desc "Generating html"
 task "html" => ["readme"] do
-  sh "Markdown.pl ../README.md > README.html"
+  sh "Markdown.pl ../README.md > ../README.html"
+end
+
+def find_all_packages
+  res = []
+  root = File.join(File.dirname(__FILE__), "..", "..")
+  Dir.foreach(root) do |x|
+    case x
+    when "."
+    when ".."
+    else
+      dir = File.join(root, x)
+      if File.exist?(File.join(dir, "README.md"))
+        res << dir
+      end
+    end
+  end
+  return res
+end
+
+
+def diff_all_readmes
+  find_all_packages().each do |dir|
+    files = Dir.glob(File.join(dir, "*.el"))
+    if files.length == 1
+      puts ("-" * 40) + " " + File.basename(dir)
+      el_file = files[0]
+      dst_file = File.join(Dir.pwd, "README-TEMP.md")
+      sh "emacs", "-batch", "-l", "../el2markdown.el", el_file, \
+      "--eval", "(el2markdown-write-file \"#{dst_file}\" t)"
+
+      # Not using "sh" since it fails when "diff" exits with an exit code.
+      system "diff", File.join(dir, "README.md"), dst_file
+    end
+  end
+end
+
+
+desc "Regression test"
+task "diff" do
+  diff_all_readmes
+end
+
+
+
+def generate_all_readmes
+  find_all_packages().each do |dir|
+    files = Dir.glob(File.join(dir, "*.el"))
+    if files.length == 1
+      puts ("-" * 40) + " " + File.basename(dir)
+      Dir.chdir(File.join(dir, "bin")) do
+        sh "rake", "html"
+      end
+    end
+  end
+end
+
+
+desc "Regression test"
+task "all" do
+  generate_all_readmes
 end
