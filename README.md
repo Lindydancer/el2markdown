@@ -1,7 +1,7 @@
 # el2markdown - Convert commentary section of elisp files to markdown
 
 *Author:* Anders Lindgren<br>
-*Version:* 0.0.1<br>
+*Version:* 0.0.2<br>
 *URL:* [https://github.com/Lindydancer/el2markdown](https://github.com/Lindydancer/el2markdown)<br>
 
 This package converts *Commentary* section in Emacs Lisp modules to
@@ -111,4 +111,4 @@ For example,
 
 
 ---
-Converted from `el2markdown.el` by [*el2markup*](https://github.com/Lindydancer/el2markdown).
+Converted from `el2markdown.el` by [*el2markdown*](https://github.com/Lindydancer/el2markdown).

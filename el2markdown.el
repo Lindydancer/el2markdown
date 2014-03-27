@@ -3,7 +3,7 @@
 ;; Copyright (C) 2013-2014 Anders Lindgren
 
 ;; Author: Anders Lindgren
-;; Version: 0.0.1
+;; Version: 0.0.2
 ;; Created: 2013-03-26
 ;; URL: https://github.com/Lindydancer/el2markdown
 
@@ -138,7 +138,7 @@
 (defun el2markdown-view-buffer ()
   "Convert comment section to markdown and display in temporary buffer."
   (interactive)
-  (with-output-to-temp-buffer "*el2markup*"
+  (with-output-to-temp-buffer "*el2markdown*"
     (el2markdown-convert)))
 
 
@@ -197,7 +197,7 @@
       (princ (concat
               "Converted" from
               " by "
-              "[*el2markup*](https://github.com/Lindydancer/el2markdown)."))
+              "[*el2markdown*](https://github.com/Lindydancer/el2markdown)."))
       (terpri))))
 
 
