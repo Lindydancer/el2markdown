@@ -1,9 +1,9 @@
-;;; el2markdown.el -- Convert commentary section of elisp files to markdown.
+;;; el2markdown.el --- Convert commentary section of elisp files to markdown.
 
 ;; Copyright (C) 2013-2014 Anders Lindgren
 
 ;; Author: Anders Lindgren
-;; Version: 0.0.2
+;; Version: 0.0.3
 ;; Created: 2013-03-26
 ;; URL: https://github.com/Lindydancer/el2markdown
 
@@ -135,6 +135,7 @@
 (defvar el2markdown-empty-comment "^;; *\\(\\({{{\\|}}}\\).*\\)?$"
   "Regexp of lines that should be considered empty.")
 
+;;;###autoload
 (defun el2markdown-view-buffer ()
   "Convert comment section to markdown and display in temporary buffer."
   (interactive)
@@ -142,6 +143,7 @@
     (el2markdown-convert)))
 
 
+;;;###autoload
 (defun el2markdown-write-file (&optional file-name overwrite-without-confirm)
   "Convert comment section to markdown and write to file."
   (interactive
@@ -171,6 +173,7 @@
           (write-file file-name (not overwrite-without-confirm)))))))
 
 
+;;;###autoload
 (defun el2markdown-write-readme ()
   "Generate README.md, designed to be used in batch mode."
   (interactive)
@@ -224,7 +227,7 @@
 
 
 (defun el2markdown-convert-title ()
-  (when (looking-at ";;+ \\(.*\\)\\.el -- \\(.*\\)$")
+  (when (looking-at ";;+ \\(.*\\)\\.el --+ \\(.*\\)$")
     (el2markdown-emit-header 1 (concat (match-string-no-properties 1)
                                        " - "
                                        (match-string-no-properties 2)))
@@ -334,4 +337,6 @@
               nil
             (terpri)))))))
 
-;; el2markdown.el ends here.
+(provide 'el2markdown)
+
+;;; el2markdown.el ends here
