@@ -3,7 +3,7 @@
 ;; Copyright (C) 2013-2014 Anders Lindgren
 
 ;; Author: Anders Lindgren
-;; Version: 0.0.3
+;; Version: 0.0.4
 ;; Created: 2013-03-26
 ;; URL: https://github.com/Lindydancer/el2markdown
 
@@ -132,7 +132,7 @@
 
 ;;; Code:
 
-(defvar el2markdown-empty-comment "^;; *\\(\\({{{\\|}}}\\).*\\)?$"
+(defvar el2markdown-empty-comment "^;;+ *\\(\\({{{\\|}}}\\).*\\)?$"
   "Regexp of lines that should be considered empty.")
 
 ;;;###autoload
@@ -204,9 +204,20 @@
       (terpri))))
 
 
-(defun el2markdown-skip-empty-lines()
+(defun el2markdown-skip-empty-lines ()
   (while (and (bolp) (eolp) (not (eobp)))
     (forward-line)))
+
+
+;; Some packages place lincense blocks in the commentary section,
+;; ignore them.
+(defun el2markdown-skip-license ()
+  "Skip license blocks."
+  (when (looking-at  "^;;; License:[ \t]*$")
+    (forward-line)
+    (while (not (or (eobp)
+                    (looking-at "^;;;")))
+      (forward-line))))
 
 
 (defun el2markdown-translate-string (string)
@@ -247,7 +258,7 @@
 
 
 (defun el2markdown-convert-formal-information-item (item lim &optional link)
-  (when (re-search-forward (concat "^;; " item ": *\\(.*\\)") nil t)
+  (when (re-search-forward (concat "^;;+ " item ": *\\(.*\\)") nil t)
     (let ((s (match-string-no-properties 1)))
       (if link
           (setq s (concat "[" s "](" s ")")))
@@ -262,6 +273,7 @@
 
 (defun el2markdown-convert-section ()
   (el2markdown-skip-empty-lines)
+  (el2markdown-skip-license)
   (if (or (looking-at  "^;;; Code:$")
           (eobp))
       nil
@@ -289,7 +301,7 @@
   (save-excursion
     (while (looking-at "^;;$")
       (forward-line))
-    (looking-at ";; *[-*]")))
+    (looking-at ";;+ *[-*]")))
 
 (defun el2markdown-emit-rest-of-comment ()
   (let ((first t))
@@ -297,7 +309,7 @@
       ;; Skip empty lines.
       (while (looking-at el2markdown-empty-comment)
         (forward-line))
-      (if (and (looking-at ";; \\(.*\\):$")
+      (if (and (looking-at ";;+ \\(.*\\):$")
                (save-excursion
                  (save-match-data
                    (forward-line)
@@ -311,8 +323,8 @@
                             (while (looking-at el2markdown-empty-comment)
                               (forward-line))
                             (or (el2markdown-is-at-bullet-list)
-                                (looking-at ";; *(")
-                                (looking-at ";;     ")))))))
+                                (looking-at ";;+ *(")
+                                (looking-at ";;+     ")))))))
           ;; Header
           (progn
             (el2markdown-emit-header (if first 2 3)
@@ -321,9 +333,9 @@
             (setq first nil))
         ;; Section of text. (Things starting with a parenthesis is
         ;; assumes to be code.)
-        (let ((is-code (looking-at ";; *("))
+        (let ((is-code (looking-at ";;+ *("))
               (is-bullet (el2markdown-is-at-bullet-list)))
-          (while (looking-at ";; ?\\(.+\\)$")
+          (while (looking-at ";;+ ?\\(.+\\)$")
             (if is-code
                 (princ "    "))
             (princ (el2markdown-translate-string
