@@ -238,7 +238,7 @@
 
 
 (defun el2markdown-convert-title ()
-  (when (looking-at ";;+ \\(.*\\)\\.el --+ \\(.*\\)$")
+  (when (looking-at ";;+ \\(.*\\)\\.el --+ \\(.*?\\)\\(-\\*-.*-\\*-\\)?$")
     (el2markdown-emit-header 1 (concat (match-string-no-properties 1)
                                        " - "
                                        (match-string-no-properties 2)))
