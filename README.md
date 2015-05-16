@@ -1,7 +1,7 @@
 # el2markdown - Convert commentary section of elisp files to markdown
 
 *Author:* Anders Lindgren<br>
-*Version:* 0.0.4<br>
+*Version:* 0.0.5<br>
 *URL:* [https://github.com/Lindydancer/el2markdown](https://github.com/Lindydancer/el2markdown)<br>
 
 This package converts *Commentary* section in Emacs Lisp modules to
@@ -75,9 +75,9 @@ to MarkDown:
 Place this package somewhere in Emacs `load-path` and add the
 following lines to a suitable init file:
 
-    (autoload 'el2markdown-view-buffer  nil t)
-    (autoload 'el2markdown-write-file   nil t)
-    (autoload 'el2markdown-write-readme nil t)
+    (autoload 'el2markdown-view-buffer  "el2markdown" nil t)
+    (autoload 'el2markdown-write-file   "el2markdown" nil t)
+    (autoload 'el2markdown-write-readme "el2markdown" nil t)
 
 ## Usage
 

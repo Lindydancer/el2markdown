@@ -1,9 +1,9 @@
-;;; el2markdown.el --- Convert commentary section of elisp files to markdown.
+;;; el2markdown.el --- Convert commentary section of elisp files to markdown. -*- lexical-binding:t -*-
 
 ;; Copyright (C) 2013-2014 Anders Lindgren
 
 ;; Author: Anders Lindgren
-;; Version: 0.0.4
+;; Version: 0.0.5
 ;; Created: 2013-03-26
 ;; URL: https://github.com/Lindydancer/el2markdown
 
@@ -96,9 +96,9 @@
 ;; Place this package somewhere in Emacs `load-path' and add the
 ;; following lines to a suitable init file:
 ;;
-;; (autoload 'el2markdown-view-buffer  nil t)
-;; (autoload 'el2markdown-write-file   nil t)
-;; (autoload 'el2markdown-write-readme nil t)
+;; (autoload 'el2markdown-view-buffer  "el2markdown" nil t)
+;; (autoload 'el2markdown-write-file   "el2markdown" nil t)
+;; (autoload 'el2markdown-write-readme "el2markdown" nil t)
 
 ;; Usage:
 ;;
@@ -132,8 +132,23 @@
 
 ;;; Code:
 
+;; The `{{{' and `}}}' and sequences are used by the package
+;; `folding.el'.
 (defvar el2markdown-empty-comment "^;;+ *\\(\\({{{\\|}}}\\).*\\)?$"
   "Regexp of lines that should be considered empty.")
+
+
+(defvar el2markdown-translate-keys-within-markdown-quotes nil
+  "When non-nil, match key sequences found between backquotes.
+
+By default, this package only converts things quoted using
+backquote and quote, which is the standard elisp way to quote
+things in comments.")
+
+
+(defvar el2markdown-keys '("RET" "TAB")
+  "List of keys that sould be translated to <key>...</key>.")
+
 
 ;;;###autoload
 (defun el2markdown-view-buffer ()
@@ -221,8 +236,11 @@
 
 
 (defun el2markdown-translate-string (string)
-  (let ((res ""))
-    (while (string-match "`\\([^']*\\)'" string)
+  (let ((res "")
+        (end-quote (if el2markdown-translate-keys-within-markdown-quotes
+                       "[`']"
+                     "'")))
+    (while (string-match (concat "`\\([^`']*\\)" end-quote) string)
       (setq res (concat res (substring string 0 (match-beginning 0))))
       (let ((content (match-string 1 string))
             (beg "`")
@@ -230,7 +248,9 @@
         (setq string (substring string (match-end 0)))
         (when (save-match-data
                 (let ((case-fold-search nil))
-                  (string-match "^[CM]-" content)))
+                  (string-match (concat "^\\([SCM]-[^`']+\\|"
+                                        (regexp-opt el2markdown-keys)
+                                        "\\)$") content)))
           (setq beg "<kbd>")
           (setq end "</kbd>"))
         (setq res (concat res beg content end))))
@@ -239,10 +259,12 @@
 
 (defun el2markdown-convert-title ()
   (when (looking-at ";;+ \\(.*\\)\\.el --+ \\(.*\\)$")
-    (el2markdown-emit-header 1 (concat (match-string-no-properties 1)
-                                       " - "
-                                       (match-string-no-properties 2)))
-    (forward-line)))
+    (let ((package-name (match-string-no-properties 1))
+          (title        (match-string-no-properties 2)))
+      (when (string-match " *-\\*-.*-\\*-" title)
+        (setq title (replace-match "" nil nil title)))
+      (el2markdown-emit-header 1 (concat package-name " - " title))
+      (forward-line))))
 
 
 (defun el2markdown-convert-formal-information ()

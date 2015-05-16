@@ -54,14 +54,26 @@ task "diff" do
 end
 
 
+def pick_dir(*dirs)
+  dirs.each do |dir|
+    if File.exist?(dir) && File.exist?(File.join(dir, "Rakefile"))
+      return dir
+    end
+  end
+  return nil
+end
 
 def generate_all_readmes
   find_all_packages().each do |dir|
     files = Dir.glob(File.join(dir, "*.el"))
     if files.length == 1
       puts ("-" * 40) + " " + File.basename(dir)
-      Dir.chdir(File.join(dir, "bin")) do
-        sh "rake", "html"
+      dir = pick_dir(File.join(dir, "admin"),
+                     File.join(dir, "bin"))
+      if dir
+        Dir.chdir(dir) do
+          sh "rake", "html"
+        end
       end
     end
   end
