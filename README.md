@@ -24,7 +24,7 @@ The general rule of thumb is that the Emacs Lisp module should be
 written using plain text, as they always have been written.
 
 However, some things are recognized. A single line ending with a
-colon is cosidered a *heading*. If this line is at the start of a
+colon is considered a *heading*. If this line is at the start of a
 comment block, it is considered a main (level 2) heading. Otherwise
 it is considered a (level 3) subheading. Note that the line
 precedes a bullet list or code, it will not be treated as a
