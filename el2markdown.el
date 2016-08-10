@@ -279,7 +279,7 @@ things in comments.")
         (terpri)))))
 
 
-(defun el2markdown-convert-formal-information-item (item lim &optional link)
+(defun el2markdown-convert-formal-information-item (item _lim &optional link)
   (when (re-search-forward (concat "^;;+ " item ": *\\(.*\\)") nil t)
     (let ((s (match-string-no-properties 1)))
       (if link
@@ -318,12 +318,17 @@ things in comments.")
   (terpri)
   (terpri))
 
+(defun el2markdown-is-in-code ()
+  "Return non-nil if point is considered to be in a code block."
+  (or (looking-at ";;+ *(")
+      (looking-at ";;+\\s-\\{5,\\}")))
 
 (defun el2markdown-is-at-bullet-list ()
   (save-excursion
     (while (looking-at "^;;$")
       (forward-line))
-    (looking-at ";;+ *[-*]")))
+    (and (not (el2markdown-is-in-code))
+         (looking-at ";;+ *[-*]"))))
 
 (defun el2markdown-emit-rest-of-comment ()
   (let ((first t))
@@ -345,8 +350,7 @@ things in comments.")
                             (while (looking-at el2markdown-empty-comment)
                               (forward-line))
                             (or (el2markdown-is-at-bullet-list)
-                                (looking-at ";;+ *(")
-                                (looking-at ";;+     ")))))))
+                                (el2markdown-is-in-code)))))))
           ;; Header
           (progn
             (el2markdown-emit-header (if first 2 3)
