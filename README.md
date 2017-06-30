@@ -1,7 +1,7 @@
 # el2markdown - Convert commentary section of elisp files to markdown
 
 *Author:* Anders Lindgren<br>
-*Version:* 0.0.6<br>
+*Version:* 0.0.7<br>
 *URL:* [https://github.com/Lindydancer/el2markdown](https://github.com/Lindydancer/el2markdown)<br>
 
 This package converts *Commentary* section in Emacs Lisp modules to
@@ -98,7 +98,14 @@ buffer, use:
 
     M-x el2markdown-write-readme RET
 
-### Batch mode
+## Post processing
+
+To post-process the output, add a function to
+`el2markdown-post-convert-hook`.  The functions in the hook should
+accept one argument, the output stream (typically the destination
+buffer).  When the hook is run current buffer is the source buffer.
+
+## Batch mode
 
 You can run el2markdown in batch mode. The function
 `el2markdown-write-readme` can be called directly using the `-f`
@@ -107,7 +114,6 @@ option. The others can be accessed with the `--eval` form.
 For example,
 
     emacs -batch -l el2markdown.el my-file.el -f el2markdown-write-readme
-
 
 
 ---
