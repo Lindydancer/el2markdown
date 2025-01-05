@@ -1,7 +1,7 @@
-# el2markdown - Convert commentary section of elisp files to markdown
+# el2markdown - Convert commentary of elisp files to markdown
 
 *Author:* Anders Lindgren<br>
-*Version:* 0.0.7<br>
+*Version:* 0.0.8<br>
 *URL:* [https://github.com/Lindydancer/el2markdown](https://github.com/Lindydancer/el2markdown)<br>
 
 This package converts *Commentary* section in Emacs Lisp modules to

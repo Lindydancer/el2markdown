@@ -1,9 +1,9 @@
-;;; el2markdown.el --- Convert commentary section of elisp files to markdown. -*- lexical-binding:t -*-
+;;; el2markdown.el --- Convert commentary of elisp files to markdown. -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2013-2014 Anders Lindgren
+;; Copyright (C) 2013-2017,2025 Anders Lindgren
 
 ;; Author: Anders Lindgren
-;; Version: 0.0.7
+;; Version: 0.0.8
 ;; Created: 2013-03-26
 ;; URL: https://github.com/Lindydancer/el2markdown
 
@@ -241,7 +241,9 @@ current buffer is the source buffer."
 
 
 (defun el2markdown-skip-empty-lines ()
-  (while (and (bolp) (eolp) (not (eobp)))
+  "Move point to the beginning of the next non-empty line."
+  (while (and (looking-at "^[ \t]*$")
+              (not (eobp)))
     (forward-line)))
 
 
